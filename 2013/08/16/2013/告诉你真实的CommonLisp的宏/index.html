@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="lisp中文社区官方群(25342018)-妮妮">
+    <meta name="keyword"  content="妮妮,lisp,prolog">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+        告诉你真实的CommonLisp的宏 - 小妮窝窝 | lisp社区
+        
+    </title>
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/aircloud.css">
+
+    
+<link rel="stylesheet" href="/css/gitment.css">
+
+    <!--<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">-->
+    <link href="//at.alicdn.com/t/font_620856_pl6z7sid89qkt9.css" rel="stylesheet" type="text/css">
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+
+<div class="site-nav-toggle" id="site-nav-toggle">
+    <button>
+        <span class="btn-bar"></span>
+        <span class="btn-bar"></span>
+        <span class="btn-bar"></span>
+    </button>
+</div>
+
+<div class="index-about">
+    <i> lisp社区妮妮-小妮窝窝 </i>
+</div>
+
+<div class="index-container">
+    
+    <div class="index-left">
+        
+<div class="nav" id="nav">
+    <div class="avatar-name">
+        <div class="avatar radius">
+            <img src="/img/avatar.jpg" />
+        </div>
+        <div class="name">
+            <i>妮妮</i>
+        </div>
+    </div>
+    <div class="contents" id="nav-content">
+        <ul>
+            <li >
+                <a href="/">
+                    <i class="iconfont icon-shouye1"></i>
+                    <span>主页</span>
+                </a>
+            </li>
+            <li >
+                <a href="/tags">
+                    <i class="iconfont icon-biaoqian1"></i>
+                    <span>标签</span>
+                </a>
+            </li>
+            <li >
+                <a href="/archives">
+                    <i class="iconfont icon-guidang2"></i>
+                    <span>存档</span>
+                </a>
+            </li>
+
+
+            <li >
+                <a href="/files/">
+                    <i class="iconfont icon-guidang1"></i>
+                    <span>文件</span>
+                </a>
+            </li>
+
+
+            <li >
+                <a href="/about/">
+                    <i class="iconfont icon-guanyu2"></i>
+                    <span>关于</span>
+                </a>
+            </li>
+
+
+            
+            <li>
+                <a id="search">
+                    <i class="iconfont icon-sousuo1"></i>
+                    <span>搜索</span>
+                </a>
+            </li>
+            
+        </ul>
+    </div>
+    
+        <div id="toc" class="toc-article">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#macro"><span class="toc-text">macro</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#reader-macro"><span class="toc-text">reader macro</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#compiler-macro"><span class="toc-text">compiler macro</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#symbol-macro"><span class="toc-text">symbol macro</span></a></li></ol>
+</div>
+    
+</div>
+
+
+<div class="search-field" id="search-field">
+    <div class="search-container">
+        <div class="search-input">
+            <span id="esc-search"> <i class="icon-fanhui iconfont"></i></span>
+            <input id="search-input"/>
+            <span id="begin-search">搜索</span>
+        </div>
+        <div class="search-result-container" id="search-result-container">
+
+        </div>
+    </div>
+</div>
+
+        <div class="index-about-mobile">
+            <i> lisp社区妮妮-小妮窝窝 </i>
+        </div>
+    </div>
+    
+    <div class="index-middle">
+        <!-- Main Content -->
+        
+
+
+<div class="post-container">
+    <div class="post-title">
+        告诉你真实的CommonLisp的宏
+    </div>
+
+    <div class="post-meta">
+        <span class="attr">发布于：<span>2013-08-16 01:09:43</span></span>
+        
+        <span class="attr">标签：/
+        
+        <a class="tag" href="/tags/#CommonLisp" title="CommonLisp">CommonLisp</a>
+        <span>/</span>
+        
+        
+        </span>
+        <span class="attr">访问：<span id="busuanzi_value_page_pv"></span>
+</span>
+</span>
+    </div>
+    <div class="post-content ">
+        <p>转载请说明来自Lisp中文社区官方群1群（25342018），小妮窝窝（307730136）。</p>
+<p>Common Lisp总共有4种被称为“宏”（macro）的东西。下面分别说说他们的作用（这里仅仅只说编译的事情，而且还很模糊没说是哪种编译器（一个Common Lisp实现必须要实现至少两个不同的编译器，分别对应不同的语义））。总之，为了不把Common Lisp的复杂给显露出来吓跑人，先将就吧。</p>
+<p>首先明确一个观点：Common Lisp的所有宏都是极其简陋的编译器hook而已。</p>
+<h2 id="macro"><a href="#macro" class="headerlink" title="macro"></a>macro</h2><ul>
+<li>也就是defmacro所定义的宏，这个宏本身是一个函数。编译器在遇到一个宏调用的时候，把当前的环境（环境在标准里面只是一个玄乎的不明所以的存在，环境访问的API在标准化的过程中被去掉了）和调用时的代码作为参数传给这个函数以调用这个函数，然后把这个函数返回的结果放到原来宏调用的位置，替换原有内容。实际上这货就是个“你的代码-&gt;Common Lisp代码”的编译器。说好听这是C宏的“加强版”，因为可以执行复杂的逻辑，实际上它不可能像C的宏那样自由的传入和传出部分代码，并且Common Lisp基本上不给这个功能提供任何便利，基本上也只有一个hook接口了（你必须使用非常原始和复杂的方法去实现你的这个小型编译器）。</li>
+</ul>
+<h2 id="reader-macro"><a href="#reader-macro" class="headerlink" title="reader macro"></a>reader macro</h2><ul>
+<li>Common Lisp的Reader（或者说是一个lexer也可以 ，反正这货就是读入一段文本，然后返回一个这段文本所表示的对象）的hook。reader在扫描到reader macro所设置的对应的字符的时候，就调用这个reader macro（实际上也一样对应个函数），让它去扫描和解析代码，然后返回对应的对象。Common Lisp不给这种功能提供什么便利，并且要根据reader algorithm来编写，要小心编写以避免各种问题。</li>
+</ul>
+<h2 id="compiler-macro"><a href="#compiler-macro" class="headerlink" title="compiler macro"></a>compiler macro</h2><ul>
+<li>这个宏其实用于前端优化。在编译的时候，遇到一段代码，如果这段代码对应的定义了相应的compiler macro，那么可以选择将这段代码传给这个对应的compiler macro（懒得说了，同样是函数），然后把函数返回的结果替换掉原有的代码。这基本上跟defmacro所定义的宏是一样的，就是对应的是不同的hook，并且这种可以控制是否要替换。同样的，不要期望Common Lisp为你这个东西提供一堆便利的工具，你只能自己使用最原始的手段来达成。</li>
+</ul>
+<h2 id="symbol-macro"><a href="#symbol-macro" class="headerlink" title="symbol macro"></a>symbol macro</h2><ul>
+<li>这是跟简单的C宏类似的东西。他的功能是，看到一个符号，就将这个符号替换成symbol macro对应的其它东西，就像#define AAA BBB一样。</li>
+</ul>
+<p>除了symbol macro，其它几个宏都是Common Lisp编译器的hook。那么既然是编译器（有哪个编译器不是这样？），输入的数据肯定是代码（code as data，代码作为数据），输出的数据也肯定是代码了（code as data）（就算你恶搞随便乱输出，你输出的东西还是被认为是代码）。</p>
+<p>这就是Common Lisp“神秘”的宏，也是那句神秘的“code as data”所说的东西。这些宏基本上都是全局性的，你定义了一个，你的所有代码都会受影响（除了宏，Common Lisp还有不少的类似的东西，即使是编译器hook还有一些其它的，比方说eval-when），所以基本上所有的代码（任何语言的代码，因为有了reader macro，你完全可以自己解析各种语言各种形式的源代码；类似的，因为有了reader macro，即使是注释也没有一种到哪里都能用的必然会被认为是注释的注释）都可以认为是Common Lisp代码，而基本上所有Common Lisp代码你都无法知道它究竟是什么意思，因为随时背后都有各种乱七八糟的东西来影响你的代码的真正意义。</p>
+<p>如果你是被神化了的“宏”、“code as data”忽悠来的，那么这就是真相。接下来该怎么做，我相信你心里已经有答案了。</p>
+<p>2013-08-16 by 小妮</p>
+
+        
+        <br />
+        <div id="comment-container">
+        </div>
+        <div id="disqus_thread"></div>
+
+        <div id="lv-container">
+        </div>
+
+    </div>
+</div>
+
+    </div>
+</div>
+
+
+<footer class="footer">
+    <ul class="list-inline text-center">
+        
+        
+
+        
+
+        
+
+        
+
+        
+
+    </ul>
+    
+    <p>
+        <span id="busuanzi_container_site_pv">
+            <span id="busuanzi_value_site_pv"></span>PV
+        </span>
+        <span id="busuanzi_container_site_uv">
+            <span id="busuanzi_value_site_uv"></span>UV
+        </span>
+        Created By <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  Theme <a href="https://github.com/aircloud/hexo-theme-aircloud" target="_blank" rel="noopener">AirCloud</a></p>
+</footer>
+
+
+
+
+</body>
+
+<script>
+    // We expose some of the variables needed by the front end
+    window.hexo_search_path = "search.json"
+    window.hexo_root = "/"
+    window.isPost = true
+</script>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+<script src="/js/index.js"></script>
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+    <script>
+        /**
+         *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+         *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+        */
+        if( '' || '')
+        var disqus_config = function () {
+            this.page.url = '';  // Replace PAGE_URL with your page's canonical URL variable
+            this.page.identifier = ''; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+
+        (function() { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/disqusjs@1.3.0/dist/disqus.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+
+
+
+</html>

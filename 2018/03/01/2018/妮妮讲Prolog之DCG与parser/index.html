@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="lisp中文社区官方群(25342018)-妮妮">
+    <meta name="keyword"  content="妮妮,lisp,prolog">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+        妮妮讲Prolog之DCG与parser - 小妮窝窝 | lisp社区
+        
+    </title>
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/aircloud.css">
+
+    
+<link rel="stylesheet" href="/css/gitment.css">
+
+    <!--<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">-->
+    <link href="//at.alicdn.com/t/font_620856_pl6z7sid89qkt9.css" rel="stylesheet" type="text/css">
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+
+<div class="site-nav-toggle" id="site-nav-toggle">
+    <button>
+        <span class="btn-bar"></span>
+        <span class="btn-bar"></span>
+        <span class="btn-bar"></span>
+    </button>
+</div>
+
+<div class="index-about">
+    <i> lisp社区妮妮-小妮窝窝 </i>
+</div>
+
+<div class="index-container">
+    
+    <div class="index-left">
+        
+<div class="nav" id="nav">
+    <div class="avatar-name">
+        <div class="avatar radius">
+            <img src="/img/avatar.jpg" />
+        </div>
+        <div class="name">
+            <i>妮妮</i>
+        </div>
+    </div>
+    <div class="contents" id="nav-content">
+        <ul>
+            <li >
+                <a href="/">
+                    <i class="iconfont icon-shouye1"></i>
+                    <span>主页</span>
+                </a>
+            </li>
+            <li >
+                <a href="/tags">
+                    <i class="iconfont icon-biaoqian1"></i>
+                    <span>标签</span>
+                </a>
+            </li>
+            <li >
+                <a href="/archives">
+                    <i class="iconfont icon-guidang2"></i>
+                    <span>存档</span>
+                </a>
+            </li>
+
+
+            <li >
+                <a href="/files/">
+                    <i class="iconfont icon-guidang1"></i>
+                    <span>文件</span>
+                </a>
+            </li>
+
+
+            <li >
+                <a href="/about/">
+                    <i class="iconfont icon-guanyu2"></i>
+                    <span>关于</span>
+                </a>
+            </li>
+
+
+            
+            <li>
+                <a id="search">
+                    <i class="iconfont icon-sousuo1"></i>
+                    <span>搜索</span>
+                </a>
+            </li>
+            
+        </ul>
+    </div>
+    
+        <div id="toc" class="toc-article">
+    
+</div>
+    
+</div>
+
+
+<div class="search-field" id="search-field">
+    <div class="search-container">
+        <div class="search-input">
+            <span id="esc-search"> <i class="icon-fanhui iconfont"></i></span>
+            <input id="search-input"/>
+            <span id="begin-search">搜索</span>
+        </div>
+        <div class="search-result-container" id="search-result-container">
+
+        </div>
+    </div>
+</div>
+
+        <div class="index-about-mobile">
+            <i> lisp社区妮妮-小妮窝窝 </i>
+        </div>
+    </div>
+    
+    <div class="index-middle">
+        <!-- Main Content -->
+        
+
+
+<div class="post-container">
+    <div class="post-title">
+        妮妮讲Prolog之DCG与parser
+    </div>
+
+    <div class="post-meta">
+        <span class="attr">发布于：<span>2018-03-01 00:00:00</span></span>
+        
+        <span class="attr">标签：/
+        
+        <a class="tag" href="/tags/#prolog" title="prolog">prolog</a>
+        <span>/</span>
+        
+        
+        </span>
+        <span class="attr">访问：<span id="busuanzi_value_page_pv"></span>
+</span>
+</span>
+    </div>
+    <div class="post-content ">
+        <p>每日一条Prolog小知识：应阿兰之邀，来讲讲dcg做简单的parser。</p>
+<p>用dcg做parser，只需描述语法，然后就自动粗来一只吊炸天的parser啦。</p>
+<p>今天用swi做例子，注意启动的时候要加上–triditional参数</p>
+<p>dcg == definite clause grammar</p>
+<p>swi prolog 7对字符串使用了新的类型和操作方法</p>
+<p>所以要加上–triditional</p>
+<p>加上这个参数后，就和sicstus一样啦</p>
+<p>辣么我们今天就用一个例子来讲解</p>
+<p>首先我们parse正整数，然后 parse 四则运算并计算</p>
+<p>辣么，首先来parse单个数字</p>
+<pre><code class="prolog">num1 ::= 0|1|2|3|4|5|6|7|8|9</code></pre>
+<p>意思是，一个数字，可以是0-9的每一个字</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%871.png" alt="图1"></p>
+<p>对应的dcg代码要这么写</p>
+<p>–&gt; 是dcg专用符号</p>
+<p>左边是谓词的头部</p>
+<p>右边是对语法的描述</p>
+<p>每个dcg谓词最后都多带两个参数</p>
+<p>num1编译后是这个样子。</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%872.png" alt="图2"></p>
+<p>辣么让我们来parse</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%873.png" alt="图3"></p>
+<p>parse “345”这个字符串，”3”刚好是一个数字，剩余的在Rest</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%874.png" alt="图4"></p>
+<p>开头空格不是数字，所以不符合语法，fail</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%875.png" alt="图5"></p>
+<p>结尾是空，于是把语言的所有可能都整出来了。</p>
+<p>字符串是list，所以”0”也就是[48]/</p>
+<p>辣么我们来parse一个完整的整数</p>
+<p>但是我们先不计算它的值</p>
+<pre><code class="prolog">simple_num ::= 
+   num1
+  | num1 simple_num</code></pre>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%876.png" alt="图6"></p>
+<p>没有少<br>|代表或者<br>a ::= b表示，a这个东西，可以被替换成b</p>
+<p>辣么，假设simple_num对应345<br>num1是单个数字<br>num1 simple_num是指，num1后面接一个simple_num<br>空格是链接<br>意思是，345相当于num1(3) simple_num(45)，相当于num1(3) num1(4) simple_num(5)，相当于num1(3) num1(4) num1(5)。不想画图了，就这么简单的来讲吧。</p>
+<p>这样吧，我做个parse_tree版本</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%877.png" alt="图7"></p>
+<p> 这是生成parse tree的版本</p>
+<p>也就是把刚才的那个奇怪的式子</p>
+<p>变成树形结构</p>
+<p>你看，就是简单的照着翻译哦</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%878.png" alt="图8"></p>
+<p>效果是这样子的，如果不指定Rest，那么3, 34,345全都是整数，于是所有可能都列出来来</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%879.png" alt="图9"></p>
+<p>辣么，简单的simple_num，照着翻译即可</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8710.png" alt="图10"></p>
+<p>要注意的是，最后还是带哪两个参数，第一个是输入的字符串，第二个是消耗掉以后剩余的部分。</p>
+<p>swi支持lazy list，这种方法可以直接用来parse网络数据流文件流等各种流</p>
+<p>逼格网的爬虫也可以用这种方法一遍传输局，一遍解析</p>
+<p>辣么我们来加点计算，让”345”变成数字345。</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8711.png" alt="11"></p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8712.png" alt="12"></p>
+<p>当然要一个初始值0，下边提供了</p>
+<p>大括号是dcg专用符号</p>
+<p>里面的代码不受dcg规则的影响</p>
+<p>大括号外面的代码受dcg规则影响</p>
+<p>无论如何都会带上两个参数</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8713.png" alt="13"></p>
+<p>根据消耗的不同，得出不同的数字</p>
+<p>这里用了十分简单的一个尾递归啦</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8714.png" alt="图14"></p>
+<p>num/3, num/4（注意省略的两个参数实际上还是在的）<br>这个A用于保存num1的返回值<br>基本思路是，每parse到一个字符，就累计一下</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8715.png" alt="图15"></p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8716.png" alt="图16"></p>
+<p>不是，这叫unification</p>
+<p>现在来说空格</p>
+<p>空格简单的这样来定义吧。<br>ws ::= “ “ ws |  “”</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8717.png" alt="图17"></p>
+<p>直接使用是这个样子</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8718.png" alt="图18"></p>
+<p>意思是，要么是空白什么都没有（后边部分），要么是一个空格外加一个ws</p>
+<p>辣么我们现在来计算四则运算表达式<br>首先我们这样定义四则运算表达式</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8719.png" alt="图19"></p>
+<p>辣么，为了让他能适应更强的场景，比方说我们可以在数字和符号中间加空格，前后也可以加空格<br>辣么可以这样来</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8720.png" alt="20"></p>
+<p>注意ws也包括空字符串</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8721.png" alt="21"></p>
+<p>辣么，照着翻译就行啦</p>
+<p>每一个都是第一行描述语法，第二行大括号做计算<br>实际使用是这样子的</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8722.png" alt="22"></p>
+<p>注意最后一个<br>    34  + 4也是合法的表达式，所以也被尝试了</p>
+<p><img src="/2018/03/01/2018/%E5%A6%AE%E5%A6%AE%E8%AE%B2Prolog%E4%B9%8BDCG%E4%B8%8Eparser/%E5%9B%BE%E7%89%8723.png" alt="23"></p>
+<hr>
+<pre><code class="prolog">num1(0) --&gt; &quot;0&quot;.
+num1(1) --&gt; &quot;1&quot;.
+num1(2) --&gt; &quot;2&quot;.
+num1(3) --&gt; &quot;3&quot;.
+num1(4) --&gt; &quot;4&quot;.
+num1(5) --&gt; &quot;5&quot;.
+num1(6) --&gt; &quot;6&quot;.
+num1(7) --&gt; &quot;7&quot;.
+num1(8) --&gt; &quot;8&quot;.
+num1(9) --&gt; &quot;9&quot;.
+
+num(Acc, X) --&gt;
+        num1(X1),
+        { X is Acc * 10 + X1 }.
+num(Acc, X) --&gt;
+        num1(A),
+        { Acc1 is Acc * 10 + A },
+        num(Acc1, X).
+num(X) --&gt;
+        num(0, X).
+
+
+simple_num --&gt;
+        num1(_).
+simple_num --&gt;
+        num1(_),
+        simple_num.
+
+
+
+ws --&gt; &quot; &quot;, ws.
+ws --&gt; &quot;&quot;.
+
+
+
+calc(X) --&gt;
+        ws, num(A), ws, &quot;+&quot;, ws, num(B), ws,
+        { X is A + B }.
+calc(X) --&gt;
+        ws, num(A), ws, &quot;-&quot;, ws, num(B), ws,
+        { X is A - B }.
+calc(X) --&gt;
+        ws, num(A), ws, &quot;*&quot;, ws, num(B), ws,
+        { X is A * B }.
+calc(X) --&gt;
+        ws, num(A), ws, &quot;/&quot;, ws, num(B), ws,
+        { X is A / B }.
+
+
+num1_parsetree(num1(0)) --&gt; &quot;0&quot;.
+num1_parsetree(num1(1)) --&gt; &quot;1&quot;.
+num1_parsetree(num1(2)) --&gt; &quot;2&quot;.
+num1_parsetree(num1(3)) --&gt; &quot;3&quot;.
+num1_parsetree(num1(4)) --&gt; &quot;4&quot;.
+num1_parsetree(num1(5)) --&gt; &quot;5&quot;.
+num1_parsetree(num1(6)) --&gt; &quot;6&quot;.
+num1_parsetree(num1(7)) --&gt; &quot;7&quot;.
+num1_parsetree(num1(8)) --&gt; &quot;8&quot;.
+num1_parsetree(num1(9)) --&gt; &quot;9&quot;.
+
+simple_num_parsetree(simple_num(X)) --&gt;
+        num1_parsetree(X).
+simple_num_parsetree(simple_num(X, Y)) --&gt;
+        num1_parsetree(X),
+        simple_num_parsetree(Y).</code></pre>
+
+        
+        <br />
+        <div id="comment-container">
+        </div>
+        <div id="disqus_thread"></div>
+
+        <div id="lv-container">
+        </div>
+
+    </div>
+</div>
+
+    </div>
+</div>
+
+
+<footer class="footer">
+    <ul class="list-inline text-center">
+        
+        
+
+        
+
+        
+
+        
+
+        
+
+    </ul>
+    
+    <p>
+        <span id="busuanzi_container_site_pv">
+            <span id="busuanzi_value_site_pv"></span>PV
+        </span>
+        <span id="busuanzi_container_site_uv">
+            <span id="busuanzi_value_site_uv"></span>UV
+        </span>
+        Created By <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  Theme <a href="https://github.com/aircloud/hexo-theme-aircloud" target="_blank" rel="noopener">AirCloud</a></p>
+</footer>
+
+
+
+
+</body>
+
+<script>
+    // We expose some of the variables needed by the front end
+    window.hexo_search_path = "search.json"
+    window.hexo_root = "/"
+    window.isPost = true
+</script>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+<script src="/js/index.js"></script>
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+    <script>
+        /**
+         *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+         *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+        */
+        if( '' || '')
+        var disqus_config = function () {
+            this.page.url = '';  // Replace PAGE_URL with your page's canonical URL variable
+            this.page.identifier = ''; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+
+        (function() { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/disqusjs@1.3.0/dist/disqus.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+
+
+
+</html>
